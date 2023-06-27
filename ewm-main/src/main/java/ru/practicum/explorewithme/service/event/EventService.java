@@ -2,7 +2,12 @@ package ru.practicum.explorewithme.service.event;
 
 import org.springframework.data.domain.Pageable;
 import ru.practicum.explorewithme.model.EventSortOption;
-import ru.practicum.explorewithme.model.event.*;
+import ru.practicum.explorewithme.model.event.Event;
+import ru.practicum.explorewithme.model.event.EventFullDto;
+import ru.practicum.explorewithme.model.event.EventShortDto;
+import ru.practicum.explorewithme.model.event.NewEventDto;
+import ru.practicum.explorewithme.model.event.UpdateEventAdminRequest;
+import ru.practicum.explorewithme.model.event.UpdateEventUserRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;

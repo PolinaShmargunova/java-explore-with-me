@@ -42,7 +42,8 @@ public class AdminCompilationController {
     }
 
     @PatchMapping("/{compId}")
-    public CompilationDto patchCompilation(@PathVariable Long compId, @RequestBody @Valid UpdateCompilationRequest request) {
+    public CompilationDto patchCompilation(@PathVariable Long compId,
+                                           @RequestBody @Valid UpdateCompilationRequest request) {
         log.trace("Обновление подборки с Id {}", compId);
         return compilationService.patchCompilation(compId, request);
     }

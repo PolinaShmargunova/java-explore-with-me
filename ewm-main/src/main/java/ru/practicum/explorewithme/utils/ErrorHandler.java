@@ -10,7 +10,15 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.practicum.explorewithme.model.exception.*;
+import ru.practicum.explorewithme.model.exception.AdminUpdateStatusException;
+import ru.practicum.explorewithme.model.exception.BadRequestException;
+import ru.practicum.explorewithme.model.exception.ConvertationException;
+import ru.practicum.explorewithme.model.exception.FullEventException;
+import ru.practicum.explorewithme.model.exception.ObjectNotFoundException;
+import ru.practicum.explorewithme.model.exception.PermissionException;
+import ru.practicum.explorewithme.model.exception.RequestCreationException;
+import ru.practicum.explorewithme.model.exception.RequestStatusException;
+import ru.practicum.explorewithme.model.exception.UserUpdateStatusException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

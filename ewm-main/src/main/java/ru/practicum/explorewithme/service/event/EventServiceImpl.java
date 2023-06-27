@@ -19,10 +19,20 @@ import ru.practicum.explorewithme.model.exception.UserUpdateStatusException;
 import ru.practicum.explorewithme.model.request.QRequest;
 import ru.practicum.explorewithme.model.request.Request;
 import ru.practicum.explorewithme.model.user.User;
-import ru.practicum.explorewithme.repository.*;
+import ru.practicum.explorewithme.repository.CategoryRepository;
+import ru.practicum.explorewithme.repository.EventRepository;
+import ru.practicum.explorewithme.repository.LocationRepository;
+import ru.practicum.explorewithme.repository.RequestRepository;
+import ru.practicum.explorewithme.repository.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
