@@ -64,7 +64,8 @@ public class PublicEventController {
         }
         List<EventShortDto> result = eventService.getPublishedEvents(text, categories, paid, rangeStart, rangeEnd,
                 onlyAvailable, from, size, sortOption);
-        client.addHit("ewm-main-service", request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now()).block();
+        client.addHit("ewm-main-service", request.getRequestURI(), request.getRemoteAddr(),
+                LocalDateTime.now()).block();
         return result;
     }
 
@@ -72,7 +73,8 @@ public class PublicEventController {
     public EventFullDto getPublishedEventById(@PathVariable Long id, HttpServletRequest request) {
         log.trace("Запрос опубликованного события {}", id);
         EventFullDto result = eventService.getPublishedEventById(id);
-        client.addHit("ewm-main-service", request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now()).block();
+        client.addHit("ewm-main-service", request.getRequestURI(), request.getRemoteAddr(),
+                LocalDateTime.now()).block();
         return result;
     }
 }
