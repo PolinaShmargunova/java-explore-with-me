@@ -46,8 +46,9 @@ public class EventServiceImpl implements EventService {
     private final EventMapper mapper;
     private final RequestRepository requestRepository;
 
-    public EventServiceImpl(EventRepository eventRepository, UserRepository userRepository, CategoryRepository categoryRepository,
-                            LocationRepository locationRepository, EventMapper mapper, RequestRepository requestRepository,
+    public EventServiceImpl(EventRepository eventRepository, UserRepository userRepository,
+                            CategoryRepository categoryRepository, LocationRepository locationRepository,
+                            EventMapper mapper, RequestRepository requestRepository,
                             @Value("${STATS_SERVER_URL:http://localhost:9090}") String serverUrl) {
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;

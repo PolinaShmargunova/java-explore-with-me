@@ -13,8 +13,9 @@ public interface SubscriptionService {
     void removeSubscription(Long userId, Long subscriberId);
 
     List<EventShortDto> getEventsFromSubscriptions(Long userId, String text, List<Long> categories, Boolean paid,
-                                                   LocalDateTime rangeStart, LocalDateTime rangeEnd, Boolean onlyAvailable,
-                                                   Integer from, Integer size, EventSortOption sortOption);
+                                                   LocalDateTime rangeStart, LocalDateTime rangeEnd,
+                                                   Boolean onlyAvailable, Integer from, Integer size,
+                                                   EventSortOption sortOption);
 
     List<SubscriptionDto> getSubscriptions(Long userId);
 }

@@ -53,20 +53,28 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    public List<EventShortDto> getEventsFromSubscriptions(Long userId, String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart, LocalDateTime rangeEnd, Boolean onlyAvailable, Integer from, Integer size, EventSortOption sortOption) {
+    public List<EventShortDto> getEventsFromSubscriptions(Long userId, String text, List<Long> categories, Boolean paid,
+                                                          LocalDateTime rangeStart, LocalDateTime rangeEnd,
+                                                          Boolean onlyAvailable, Integer from, Integer size,
+                                                          EventSortOption sortOption) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ObjectNotFoundException("Не найден пользователь с id " + userId));
         List<Long> subscriptions = subscriptionRepository.findSubscriptionsBySubscriber(user);
         if (subscriptions.isEmpty()) {
             return new LinkedList<>();
         }
-        return eventService.getPublishedEventsOfUsers(subscriptions, text, categories, paid, rangeStart, rangeEnd, onlyAvailable, from, size, sortOption);
+        return eventService.getPublishedEventsOfUsers(subscriptions, text, categories, paid, rangeStart,
+                rangeEnd, onlyAvailable, from, size, sortOption
+        );
     }
 
     @Override
     public List<SubscriptionDto> getSubscriptions(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ObjectNotFoundException("Не найден пользователь с id " + userId));
-        return subscriptionRepository.findBySubscriber(user).stream().map(mapper::toSubscriptionDto).collect(Collectors.toList());
+        return subscriptionRepository.findBySubscriber(user)
+                .stream().map(mapper::toSubscriptionDto)
+                .collect(Collectors.toList()
+                );
     }
 }
