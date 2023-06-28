@@ -1,8 +1,7 @@
 package ru.practicum.explorewithme.model.request;
 
-
 import org.mapstruct.Mapper;
-import org.springframework.web.bind.annotation.Mapping;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface RequestMapper {
