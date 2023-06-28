@@ -34,8 +34,10 @@ public class PublicCompilationController {
 
     @GetMapping
     public List<CompilationDto> getCompilations(@RequestParam(defaultValue = "false") Boolean pinned,
-                                                @RequestParam(defaultValue = CommonUtils.PAGINATION_DEFAULT_FROM) @PositiveOrZero Integer from,
-                                                @RequestParam(defaultValue = CommonUtils.PAGINATION_DEFAULT_SIZE) @Positive Integer size) {
+                                                @RequestParam(defaultValue = CommonUtils.PAGINATION_DEFAULT_FROM)
+                                                @PositiveOrZero Integer from,
+                                                @RequestParam(defaultValue = CommonUtils.PAGINATION_DEFAULT_SIZE)
+                                                    @Positive Integer size) {
         log.trace("Запрос подборок pinned = {}", pinned);
         return compilationService.getCompilations(pinned, new CustomPageRequest(from, size));
     }

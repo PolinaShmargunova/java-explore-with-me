@@ -7,7 +7,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.explorewithme.model.EventSortOption;
 import ru.practicum.explorewithme.model.event.EventShortDto;
 import ru.practicum.explorewithme.model.exception.ConvertationException;
@@ -60,9 +67,11 @@ public class PrivateSubscriptionController {
                                                          @RequestParam(required = false) List<Long> categories,
                                                          @RequestParam(required = false) Boolean paid,
                                                          @RequestParam(required = false)
-                                                         @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
+                                                         @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+                                                         LocalDateTime rangeStart,
                                                          @RequestParam(required = false)
-                                                         @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
+                                                         @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+                                                         LocalDateTime rangeEnd,
                                                          @RequestParam(required = false) Boolean onlyAvailable,
                                                          @RequestParam(required = false) String sort,
                                                          @RequestParam(defaultValue = CommonUtils.PAGINATION_DEFAULT_FROM) @PositiveOrZero Integer from,

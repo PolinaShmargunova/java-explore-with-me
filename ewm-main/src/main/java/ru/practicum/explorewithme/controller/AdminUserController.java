@@ -41,8 +41,10 @@ public class AdminUserController {
 
     @GetMapping
     public List<UserDto> getUsers(@RequestParam(required = false) List<Long> ids,
-                                  @RequestParam(defaultValue = CommonUtils.PAGINATION_DEFAULT_FROM) @PositiveOrZero Integer from,
-                                  @RequestParam(defaultValue = CommonUtils.PAGINATION_DEFAULT_SIZE) @Positive Integer size) {
+                                  @RequestParam(defaultValue = CommonUtils.PAGINATION_DEFAULT_FROM)
+                                  @PositiveOrZero Integer from,
+                                  @RequestParam(defaultValue = CommonUtils.PAGINATION_DEFAULT_SIZE)
+                                      @Positive Integer size) {
         log.trace("Запрошены пользователи с id {}", ids);
         if (ids != null) {
             return userService.getUsersByIds(ids, new CustomPageRequest(from, size));

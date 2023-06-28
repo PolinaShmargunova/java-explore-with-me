@@ -47,13 +47,17 @@ public class PublicEventController {
                                                   @RequestParam(required = false) List<Long> categories,
                                                   @RequestParam(required = false) Boolean paid,
                                                   @RequestParam(required = false)
-                                                  @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
+                                                  @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+                                                      LocalDateTime rangeStart,
                                                   @RequestParam(required = false)
-                                                  @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
+                                                  @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+                                                      LocalDateTime rangeEnd,
                                                   @RequestParam(required = false) Boolean onlyAvailable,
                                                   @RequestParam(required = false) String sort,
-                                                  @RequestParam(defaultValue = CommonUtils.PAGINATION_DEFAULT_FROM) @PositiveOrZero Integer from,
-                                                  @RequestParam(defaultValue = CommonUtils.PAGINATION_DEFAULT_SIZE) @Positive Integer size,
+                                                  @RequestParam(defaultValue = CommonUtils.PAGINATION_DEFAULT_FROM)
+                                                      @PositiveOrZero Integer from,
+                                                  @RequestParam(defaultValue = CommonUtils.PAGINATION_DEFAULT_SIZE)
+                                                      @Positive Integer size,
                                                   HttpServletRequest request) {
         log.trace("Поиск опубликованного события: текст = '{}', категории {}, платные {} за период {}-{} только доступные {}",
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable);

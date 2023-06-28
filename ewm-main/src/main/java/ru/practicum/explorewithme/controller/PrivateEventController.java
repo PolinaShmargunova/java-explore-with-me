@@ -49,8 +49,10 @@ public class PrivateEventController {
 
     @GetMapping
     public List<EventShortDto> getEventsOfUser(@PathVariable Long userId,
-                                               @RequestParam(defaultValue = CommonUtils.PAGINATION_DEFAULT_FROM) @PositiveOrZero Integer from,
-                                               @RequestParam(defaultValue = CommonUtils.PAGINATION_DEFAULT_SIZE) @Positive Integer size) {
+                                               @RequestParam(defaultValue = CommonUtils.PAGINATION_DEFAULT_FROM)
+                                               @PositiveOrZero Integer from,
+                                               @RequestParam(defaultValue = CommonUtils.PAGINATION_DEFAULT_SIZE)
+                                                   @Positive Integer size) {
         log.trace("Запрошены события пользователя {}", userId);
         return eventService.getEventsOfUser(userId, new CustomPageRequest(from, size));
     }
