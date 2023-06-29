@@ -94,6 +94,7 @@ public class RequestServiceImpl implements RequestService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public void saveAll(List<Request> requests) {
         requestRepository.saveAll(requests);
     }
