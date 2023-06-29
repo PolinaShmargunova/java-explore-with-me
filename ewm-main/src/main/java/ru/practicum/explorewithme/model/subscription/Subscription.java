@@ -3,7 +3,6 @@ package ru.practicum.explorewithme.model.subscription;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
@@ -23,7 +22,6 @@ import java.util.Objects;
 
 @Data
 @RequiredArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
 @ToString

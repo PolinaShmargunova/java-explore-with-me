@@ -1,6 +1,10 @@
 package ru.practicum.explorewithme.model.compilation;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.explorewithme.model.event.Event;
 
@@ -18,7 +22,6 @@ import java.util.Objects;
 
 @Entity
 @RequiredArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
 @ToString

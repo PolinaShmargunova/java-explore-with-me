@@ -1,6 +1,11 @@
 package ru.practicum.explorewithme.model.category;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,13 +15,12 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.Objects;
 
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @RequiredArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
 @ToString
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "categories")
 
 public class Category {

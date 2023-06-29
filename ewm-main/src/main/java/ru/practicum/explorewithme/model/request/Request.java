@@ -1,6 +1,10 @@
 package ru.practicum.explorewithme.model.request;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.explorewithme.model.event.Event;
 import ru.practicum.explorewithme.model.user.User;
@@ -18,7 +22,6 @@ import java.util.Objects;
 
 @Entity
 @RequiredArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
 @ToString
