@@ -1,7 +1,11 @@
 package ru.practicum.explorewithme.model.event;
 
 import lombok.AccessLevel;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.explorewithme.model.category.Category;
 import ru.practicum.explorewithme.model.user.User;
@@ -19,9 +23,14 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
-@Data
+@RequiredArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@ToString
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "events")
 public class Event {
@@ -64,4 +73,28 @@ public class Event {
 
     @Transient
     Long views;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Event event = (Event) o;
+        return Objects.equals(id, event.id) && Objects.equals(annotation, event.annotation) &&
+                Objects.equals(category, event.category) && Objects.equals(createdOn, event.createdOn) &&
+                Objects.equals(description, event.description) && Objects.equals(eventDate, event.eventDate) &&
+                Objects.equals(initiator, event.initiator) && Objects.equals(location, event.location) &&
+                Objects.equals(paid, event.paid) && Objects.equals(participantLimit, event.participantLimit) &&
+                Objects.equals(publishedOn, event.publishedOn) &&
+                Objects.equals(requestModeration, event.requestModeration) &&
+                state == event.state && Objects.equals(title, event.title) &&
+                Objects.equals(confirmedRequests, event.confirmedRequests) && Objects.equals(views, event.views);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, annotation, category, createdOn, description,
+                eventDate, initiator, location, paid, participantLimit, publishedOn,
+                requestModeration, state, title, confirmedRequests, views
+        );
+    }
 }
