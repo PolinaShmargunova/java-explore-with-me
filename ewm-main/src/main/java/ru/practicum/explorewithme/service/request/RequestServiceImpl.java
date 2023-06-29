@@ -22,8 +22,8 @@ import ru.practicum.explorewithme.repository.UserRepository;
 import ru.practicum.explorewithme.service.event.EventService;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -94,11 +94,6 @@ public class RequestServiceImpl implements RequestService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
-    public void saveAll(List<Request> requests) {
-        requestRepository.saveAll(requests);
-    }
-
     @Override
     @Transactional
     public EventRequestStatusUpdateResult patchRequestsOfEvent(Long userId, Long eventId,
@@ -114,7 +109,6 @@ public class RequestServiceImpl implements RequestService {
             throw new FullEventException("Не осталось свободных мест в данном событии");
         }
         EventRequestStatusUpdateResult updateResult = new EventRequestStatusUpdateResult();
-        List<Request> updatedRequests = new ArrayList<>();
         for (Long requestId : request.getRequestIds()) {
             Request req = requestRepository.findById(requestId)
                     .orElseThrow(() -> new ObjectNotFoundException("Не найден запрос с id " + requestId));
@@ -132,10 +126,12 @@ public class RequestServiceImpl implements RequestService {
                         req.setStatus(RequestState.REJECTED);
                         updateResult.addRejectedRequest(mapper.toParticipationRequestDto(req));
                     }
+                    break;
+                default:
+                    throw new IllegalStateException("Недопустимое значение");
             }
-            updatedRequests.add(req);
+            requestRepository.save(req);
         }
-        saveAll(updatedRequests);
         return updateResult;
     }
 }
