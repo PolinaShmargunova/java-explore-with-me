@@ -22,6 +22,7 @@ import ru.practicum.explorewithme.repository.UserRepository;
 import ru.practicum.explorewithme.service.event.EventService;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -93,19 +94,26 @@ public class RequestServiceImpl implements RequestService {
                 .collect(Collectors.toList());
     }
 
+    public void saveAll(List<Request> requests) {
+        requestRepository.saveAll(requests);
+    }
+
     @Override
     @Transactional
-    public EventRequestStatusUpdateResult patchRequestsOfEvent(Long userId, Long eventId, EventRequestStatusUpdateRequest request) {
+    public EventRequestStatusUpdateResult patchRequestsOfEvent(Long userId, Long eventId,
+                                                               EventRequestStatusUpdateRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ObjectNotFoundException("Не найден пользователь с id " + userId));
         Event event = eventService.getEventById(eventId);
         if (!event.getInitiator().equals(user)) {
             throw new PermissionException("Событие создано другим пользователем");
         }
-        if (request.getStatus() == RequestUserState.CONFIRMED && event.getParticipantLimit() <= event.getConfirmedRequests()) {
+        if (request.getStatus() == RequestUserState.CONFIRMED && event.getParticipantLimit() <=
+                event.getConfirmedRequests()) {
             throw new FullEventException("Не осталось свободных мест в данном событии");
         }
         EventRequestStatusUpdateResult updateResult = new EventRequestStatusUpdateResult();
+        List<Request> updatedRequests = new ArrayList<>();
         for (Long requestId : request.getRequestIds()) {
             Request req = requestRepository.findById(requestId)
                     .orElseThrow(() -> new ObjectNotFoundException("Не найден запрос с id " + requestId));
@@ -124,8 +132,9 @@ public class RequestServiceImpl implements RequestService {
                         updateResult.addRejectedRequest(mapper.toParticipationRequestDto(req));
                     }
             }
-            requestRepository.save(req);
+            updatedRequests.add(req);
         }
+        saveAll(updatedRequests);
         return updateResult;
     }
 }
