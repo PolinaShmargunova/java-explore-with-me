@@ -24,7 +24,6 @@ import ru.practicum.explorewithme.service.event.EventService;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
