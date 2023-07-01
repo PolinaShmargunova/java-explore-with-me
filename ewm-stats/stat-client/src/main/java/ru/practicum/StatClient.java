@@ -1,5 +1,6 @@
 package ru.practicum;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -13,28 +14,27 @@ import java.util.List;
 
 @Service
 public class StatClient {
-    private static final String SERVER_URL = "http://localhost:9090";
 
     private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final WebClient client;
 
-    public StatClient() {
+    public StatClient(@Value("${STATS_SERVER_URL}") String serverUrl) {
         this.client = WebClient.builder()
-                .baseUrl(SERVER_URL)
+                .baseUrl(serverUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }
 
-    public Mono<EndpointHitDto> addHit(EndpointHitDto dto) {
+    public Mono<EndpointHitDto> addHit(String app, String uri, String ip, LocalDateTime timestamp) {
         return client
                 .post()
                 .uri("/hit")
-                .body(dto, EndpointHitDto.class)
+                .bodyValue(new EndpointHitDto(null, app, uri, ip, timestamp))
                 .retrieve()
                 .bodyToMono(EndpointHitDto.class);
     }
 
-    public Mono<List<ViewStatsDto>> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
+    public Mono<List<ViewStats>> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
         String startString = start.format(DTF);
         String endString = end.format(DTF);
         return client
