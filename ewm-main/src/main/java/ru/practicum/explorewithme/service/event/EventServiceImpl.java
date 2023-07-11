@@ -207,44 +207,6 @@ public class EventServiceImpl implements EventService {
         return mapper.toEventFullDto(setConfirmedRequestAndViews(eventRepository.save(event)));
     }
 
-    private void checkRequestLocation(Event event, LocationDto location2, Boolean paid, Integer participantLimit,
-                                      Boolean requestModeration, String title) {
-        if (location2 != null) {
-            LocationDto locationDto = location2;
-            Location location = locationRepository.findByLatAndLon(locationDto.getLat(), locationDto.getLon()).orElse(
-                    locationRepository.save(new Location(locationDto.getLat(), locationDto.getLon()))
-            );
-            event.setLocation(location);
-        }
-        if (paid != null) {
-            event.setPaid(paid);
-        }
-        if (participantLimit != null) {
-            event.setParticipantLimit(participantLimit);
-        }
-        if (requestModeration != null) {
-            event.setRequestModeration(requestModeration);
-        }
-        if (title != null) {
-            event.setTitle(title);
-        }
-    }
-
-    private void checkRequestAnnotation(Long eventId, Event event, String annotation,
-                                        Long category2, String description) {
-        if (annotation != null) {
-            event.setAnnotation(annotation);
-        }
-        if (category2 != null) {
-            Category category = categoryRepository.findById(category2)
-                    .orElseThrow(() -> new ObjectNotFoundException("Не найдена категория с id " + eventId));
-            event.setCategory(category);
-        }
-        if (description != null) {
-            event.setDescription(description);
-        }
-    }
-
     @Override
     public List<EventShortDto> getPublishedEvents(String text,
                                                   List<Long> categories,
@@ -287,65 +249,6 @@ public class EventServiceImpl implements EventService {
         checkRequestText(text, categories, paid, rangeStart, rangeEnd);
         List<EventShortDto> events = checkRequestAvailable(onlyAvailable, from, size, sortOption);
         return events.stream().collect(Collectors.toList());
-    }
-
-    private void checkRequestText(String text,
-                                  List<Long> categories,
-                                  Boolean paid,
-                                  LocalDateTime rangeStart,
-                                  LocalDateTime rangeEnd) {
-
-        if (text != null && !text.isBlank()) {
-            BooleanExpression byTextInAnnotation = QEvent.event.annotation.likeIgnoreCase("%" + text + "%");
-            BooleanExpression byTextInDescription = QEvent.event.description.likeIgnoreCase("%" + text + "%");
-            booleanBuilder.and(byTextInAnnotation.or(byTextInDescription));
-        }
-        if (categories != null && categories.size() != 0) {
-            booleanBuilder.and(QEvent.event.category.id.in(categories));
-        }
-        if (paid != null) {
-            booleanBuilder.and(QEvent.event.paid.eq(paid));
-        }
-        if (rangeStart != null && rangeEnd != null) {
-            booleanBuilder.and(QEvent.event.eventDate.between(rangeStart, rangeEnd));
-        } else {
-            booleanBuilder.and(QEvent.event.eventDate.after(LocalDateTime.now()));
-        }
-    }
-
-    private List<EventShortDto> checkRequestAvailable(Boolean onlyAvailable,
-                                                      Integer from,
-                                                      Integer size,
-                                                      EventSortOption sortOption) {
-        if (onlyAvailable != null && onlyAvailable) {
-            BooleanExpression withoutLimit = QEvent.event.participantLimit.eq(0);
-            BooleanExpression withLimitAvailable = QEvent.event.participantLimit.gt(
-                    JPAExpressions.select(QRequest.request.count())
-                            .from(QRequest.request)
-                            .where(QRequest.request.event.eq(QEvent.event))
-            );
-            booleanBuilder.and(withoutLimit.or(withLimitAvailable));
-        }
-        List<Event> events = new ArrayList<>();
-        eventRepository.findAll(booleanBuilder).forEach(events::add);
-        events = setConfirmedRequestsAndViews(events);
-        if (sortOption != null) {
-            switch (sortOption) {
-                case EVENT_DATE:
-                    events = events.stream().sorted(Comparator.comparing(Event::getEventDate))
-                            .skip(from).limit(size).collect(Collectors.toList());
-                    break;
-                case VIEWS:
-                    events = events.stream().sorted((e1, e2) -> -Long.compare(e1.getViews(), e2.getViews()))
-                            .skip(from).limit(size).collect(Collectors.toList());
-                    break;
-                default:
-                    events = events.stream().skip(from).limit(size).collect(Collectors.toList());
-            }
-        } else {
-            events = events.stream().skip(from).limit(size).collect(Collectors.toList());
-        }
-        return events.stream().map(mapper::toEventShortDto).collect(Collectors.toList());
     }
 
     @Override
@@ -409,5 +312,102 @@ public class EventServiceImpl implements EventService {
                 stat -> Long.parseLong(stat.getUri().replace("/events/", "")),
                 ViewStats::getHits
         ));
+    }
+
+    private void checkRequestLocation(Event event, LocationDto location2, Boolean paid, Integer participantLimit,
+                                      Boolean requestModeration, String title) {
+        if (location2 != null) {
+            LocationDto locationDto = location2;
+            Location location = locationRepository.findByLatAndLon(locationDto.getLat(), locationDto.getLon()).orElse(
+                    locationRepository.save(new Location(locationDto.getLat(), locationDto.getLon()))
+            );
+            event.setLocation(location);
+        }
+        if (paid != null) {
+            event.setPaid(paid);
+        }
+        if (participantLimit != null) {
+            event.setParticipantLimit(participantLimit);
+        }
+        if (requestModeration != null) {
+            event.setRequestModeration(requestModeration);
+        }
+        if (title != null) {
+            event.setTitle(title);
+        }
+    }
+
+    private void checkRequestAnnotation(Long eventId, Event event, String annotation,
+                                        Long category2, String description) {
+        if (annotation != null) {
+            event.setAnnotation(annotation);
+        }
+        if (category2 != null) {
+            Category category = categoryRepository.findById(category2)
+                    .orElseThrow(() -> new ObjectNotFoundException("Не найдена категория с id " + eventId));
+            event.setCategory(category);
+        }
+        if (description != null) {
+            event.setDescription(description);
+        }
+    }
+
+    private void checkRequestText(String text,
+                                  List<Long> categories,
+                                  Boolean paid,
+                                  LocalDateTime rangeStart,
+                                  LocalDateTime rangeEnd) {
+
+        if (text != null && !text.isBlank()) {
+            BooleanExpression byTextInAnnotation = QEvent.event.annotation.likeIgnoreCase("%" + text + "%");
+            BooleanExpression byTextInDescription = QEvent.event.description.likeIgnoreCase("%" + text + "%");
+            booleanBuilder.and(byTextInAnnotation.or(byTextInDescription));
+        }
+        if (categories != null && categories.size() != 0) {
+            booleanBuilder.and(QEvent.event.category.id.in(categories));
+        }
+        if (paid != null) {
+            booleanBuilder.and(QEvent.event.paid.eq(paid));
+        }
+        if (rangeStart != null && rangeEnd != null) {
+            booleanBuilder.and(QEvent.event.eventDate.between(rangeStart, rangeEnd));
+        } else {
+            booleanBuilder.and(QEvent.event.eventDate.after(LocalDateTime.now()));
+        }
+    }
+
+    private List<EventShortDto> checkRequestAvailable(Boolean onlyAvailable,
+                                                      Integer from,
+                                                      Integer size,
+                                                      EventSortOption sortOption) {
+        if (onlyAvailable != null && onlyAvailable) {
+            BooleanExpression withoutLimit = QEvent.event.participantLimit.eq(0);
+            BooleanExpression withLimitAvailable = QEvent.event.participantLimit.gt(
+                    JPAExpressions.select(QRequest.request.count())
+                            .from(QRequest.request)
+                            .where(QRequest.request.event.eq(QEvent.event))
+            );
+            booleanBuilder.and(withoutLimit.or(withLimitAvailable));
+        }
+        List<Event> events = new ArrayList<>();
+        eventRepository.findAll(booleanBuilder).forEach(events::add);
+        events = setConfirmedRequestsAndViews(events);
+        if (sortOption != null) {
+            switch (sortOption) {
+                case EVENT_DATE:
+                    events = events.stream().sorted(Comparator.comparing(Event::getEventDate))
+                            .skip(from).limit(size).collect(Collectors.toList());
+                    break;
+                case VIEWS:
+                    events = events.stream().sorted((e1, e2) -> -Long.compare(e1.getViews(), e2.getViews()))
+                            .skip(from).limit(size).collect(Collectors.toList());
+                    break;
+                default:
+                    events = events.stream().skip(from).limit(size).collect(Collectors.toList());
+            }
+        } else {
+            events = events.stream().skip(from).limit(size).collect(Collectors.toList());
+        }
+        return events.stream().map(mapper::toEventShortDto).collect(Collectors.toList());
     }
 }
