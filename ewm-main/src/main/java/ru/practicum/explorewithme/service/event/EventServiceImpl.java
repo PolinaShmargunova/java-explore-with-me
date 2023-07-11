@@ -46,7 +46,7 @@ public class EventServiceImpl implements EventService {
     private final EventMapper mapper;
     private final RequestRepository requestRepository;
 
-    BooleanBuilder booleanBuilder = new BooleanBuilder(QEvent.event.state.eq(EventState.PUBLISHED));
+   private final BooleanBuilder booleanBuilder = new BooleanBuilder(QEvent.event.state.eq(EventState.PUBLISHED));
 
     public EventServiceImpl(EventRepository eventRepository, UserRepository userRepository,
                             CategoryRepository categoryRepository, LocationRepository locationRepository,
@@ -294,7 +294,6 @@ public class EventServiceImpl implements EventService {
                                   Boolean paid,
                                   LocalDateTime rangeStart,
                                   LocalDateTime rangeEnd) {
-        BooleanBuilder booleanBuilder = new BooleanBuilder(QEvent.event.state.eq(EventState.PUBLISHED));
 
         if (text != null && !text.isBlank()) {
             BooleanExpression byTextInAnnotation = QEvent.event.annotation.likeIgnoreCase("%" + text + "%");
