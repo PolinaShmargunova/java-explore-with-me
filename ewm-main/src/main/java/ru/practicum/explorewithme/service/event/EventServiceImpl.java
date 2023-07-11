@@ -216,24 +216,7 @@ public class EventServiceImpl implements EventService {
                                                   Integer from,
                                                   Integer size,
                                                   EventSortOption sortOption) {
-        BooleanBuilder booleanBuilder = new BooleanBuilder(QEvent.event.state.eq(EventState.PUBLISHED));
-
-        if (text != null && !text.isBlank()) {
-            BooleanExpression byTextInAnnotation = QEvent.event.annotation.likeIgnoreCase("%" + text + "%");
-            BooleanExpression byTextInDescription = QEvent.event.description.likeIgnoreCase("%" + text + "%");
-            booleanBuilder.and(byTextInAnnotation.or(byTextInDescription));
-        }
-        if (categories != null && categories.size() != 0) {
-            booleanBuilder.and(QEvent.event.category.id.in(categories));
-        }
-        if (paid != null) {
-            booleanBuilder.and(QEvent.event.paid.eq(paid));
-        }
-        if (rangeStart != null && rangeEnd != null) {
-            booleanBuilder.and(QEvent.event.eventDate.between(rangeStart, rangeEnd));
-        } else {
-            booleanBuilder.and(QEvent.event.eventDate.after(LocalDateTime.now()));
-        }
+        checkRequestText(text, categories, paid, rangeStart, rangeEnd);
         if (rangeStart != null && rangeEnd != null && rangeEnd.isBefore(rangeStart)) {
             throw new BadRequestException("Даты поиска событий не верны");
         }
@@ -262,24 +245,7 @@ public class EventServiceImpl implements EventService {
         if (userIds != null && !userIds.isEmpty()) {
             booleanBuilder.and(QEvent.event.initiator.id.in(userIds));
         }
-        BooleanBuilder booleanBuilder = new BooleanBuilder(QEvent.event.state.eq(EventState.PUBLISHED));
-
-        if (text != null && !text.isBlank()) {
-            BooleanExpression byTextInAnnotation = QEvent.event.annotation.likeIgnoreCase("%" + text + "%");
-            BooleanExpression byTextInDescription = QEvent.event.description.likeIgnoreCase("%" + text + "%");
-            booleanBuilder.and(byTextInAnnotation.or(byTextInDescription));
-        }
-        if (categories != null && categories.size() != 0) {
-            booleanBuilder.and(QEvent.event.category.id.in(categories));
-        }
-        if (paid != null) {
-            booleanBuilder.and(QEvent.event.paid.eq(paid));
-        }
-        if (rangeStart != null && rangeEnd != null) {
-            booleanBuilder.and(QEvent.event.eventDate.between(rangeStart, rangeEnd));
-        } else {
-            booleanBuilder.and(QEvent.event.eventDate.after(LocalDateTime.now()));
-        }
+        checkRequestText(text, categories, paid, rangeStart, rangeEnd);
         List<EventShortDto> events = checkRequestAvailable(onlyAvailable, from, size, sortOption);
         return events.stream().collect(Collectors.toList());
     }
@@ -385,29 +351,29 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-//    private void checkRequestText(String text,
-//                                  List<Long> categories,
-//                                  Boolean paid,
-//                                  LocalDateTime rangeStart,
-//                                  LocalDateTime rangeEnd) {
-//
-//        if (text != null && !text.isBlank()) {
-//            BooleanExpression byTextInAnnotation = QEvent.event.annotation.likeIgnoreCase("%" + text + "%");
-//            BooleanExpression byTextInDescription = QEvent.event.description.likeIgnoreCase("%" + text + "%");
-//            booleanBuilder.and(byTextInAnnotation.or(byTextInDescription));
-//        }
-//        if (categories != null && categories.size() != 0) {
-//            booleanBuilder.and(QEvent.event.category.id.in(categories));
-//        }
-//        if (paid != null) {
-//            booleanBuilder.and(QEvent.event.paid.eq(paid));
-//        }
-//        if (rangeStart != null && rangeEnd != null) {
-//            booleanBuilder.and(QEvent.event.eventDate.between(rangeStart, rangeEnd));
-//        } else {
-//            booleanBuilder.and(QEvent.event.eventDate.after(LocalDateTime.now()));
-//        }
-//    }
+    private void checkRequestText(String text,
+                                  List<Long> categories,
+                                  Boolean paid,
+                                  LocalDateTime rangeStart,
+                                  LocalDateTime rangeEnd) {
+
+        if (text != null && !text.isBlank()) {
+            BooleanExpression byTextInAnnotation = QEvent.event.annotation.likeIgnoreCase("%" + text + "%");
+            BooleanExpression byTextInDescription = QEvent.event.description.likeIgnoreCase("%" + text + "%");
+            booleanBuilder.and(byTextInAnnotation.or(byTextInDescription));
+        }
+        if (categories != null && categories.size() != 0) {
+            booleanBuilder.and(QEvent.event.category.id.in(categories));
+        }
+        if (paid != null) {
+            booleanBuilder.and(QEvent.event.paid.eq(paid));
+        }
+        if (rangeStart != null && rangeEnd != null) {
+            booleanBuilder.and(QEvent.event.eventDate.between(rangeStart, rangeEnd));
+        } else {
+            booleanBuilder.and(QEvent.event.eventDate.after(LocalDateTime.now()));
+        }
+    }
 
     private List<EventShortDto> checkRequestAvailable(Boolean onlyAvailable,
                                                       Integer from,
