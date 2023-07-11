@@ -45,7 +45,7 @@ public class EventServiceImpl implements EventService {
     private final StatClient client;
     private final EventMapper mapper;
     private final RequestRepository requestRepository;
-    private BooleanBuilder booleanBuilder = new BooleanBuilder(QEvent.event.state.eq(EventState.PUBLISHED));
+    private final BooleanBuilder booleanBuilder = new BooleanBuilder(QEvent.event.state.eq(EventState.PUBLISHED));
 
     public EventServiceImpl(EventRepository eventRepository, UserRepository userRepository,
                             CategoryRepository categoryRepository, LocationRepository locationRepository,
@@ -221,7 +221,7 @@ public class EventServiceImpl implements EventService {
             throw new BadRequestException("Даты поиска событий не верны");
         }
         List<EventShortDto> events = checkRequestAvailable(onlyAvailable, from, size, sortOption);
-        return events.stream().collect(Collectors.toList());
+        return new ArrayList<>(events);
     }
 
     @Override
@@ -247,7 +247,7 @@ public class EventServiceImpl implements EventService {
         }
         checkRequestText(text, categories, paid, rangeStart, rangeEnd);
         List<EventShortDto> events = checkRequestAvailable(onlyAvailable, from, size, sortOption);
-        return events.stream().collect(Collectors.toList());
+        return new ArrayList<>(events);
     }
 
     @Override
