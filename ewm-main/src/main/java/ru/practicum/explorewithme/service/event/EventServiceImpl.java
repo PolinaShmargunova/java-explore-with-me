@@ -45,7 +45,7 @@ public class EventServiceImpl implements EventService {
     private final StatClient client;
     private final EventMapper mapper;
     private final RequestRepository requestRepository;
-    private final BooleanBuilder booleanBuilder = new BooleanBuilder(QEvent.event.state.eq(EventState.PUBLISHED));
+    private BooleanBuilder booleanBuilder = new BooleanBuilder(QEvent.event.state.eq(EventState.PUBLISHED));
 
     public EventServiceImpl(EventRepository eventRepository, UserRepository userRepository,
                             CategoryRepository categoryRepository, LocationRepository locationRepository,
@@ -93,17 +93,7 @@ public class EventServiceImpl implements EventService {
     public EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest adminRequest) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Не найдено событие с id " + eventId));
-        if (adminRequest.getAnnotation() != null) {
-            event.setAnnotation(adminRequest.getAnnotation());
-        }
-        if (adminRequest.getCategory() != null) {
-            Category category = categoryRepository.findById(adminRequest.getCategory())
-                    .orElseThrow(() -> new ObjectNotFoundException("Не найдена категория с id " + eventId));
-            event.setCategory(category);
-        }
-        if (adminRequest.getDescription() != null) {
-            event.setDescription(adminRequest.getDescription());
-        }
+        checkRequestAnnotation(eventId, event, adminRequest.getAnnotation(), adminRequest.getCategory(), adminRequest.getDescription());
         if (adminRequest.getEventDate() != null) {
             event.setEventDate(adminRequest.getEventDate());
         }
@@ -193,17 +183,7 @@ public class EventServiceImpl implements EventService {
         if (event.getState() != EventState.CANCELED && event.getState() != EventState.PENDING) {
             throw new UserUpdateStatusException("Изменить статус можно только из статусов PENDING и CANCELED");
         }
-        if (userRequest.getAnnotation() != null) {
-            event.setAnnotation(userRequest.getAnnotation());
-        }
-        if (userRequest.getCategory() != null) {
-            Category category = categoryRepository.findById(userRequest.getCategory())
-                    .orElseThrow(() -> new ObjectNotFoundException("Не найдена категория с id " + eventId));
-            event.setCategory(category);
-        }
-        if (userRequest.getDescription() != null) {
-            event.setDescription(userRequest.getDescription());
-        }
+        checkRequestAnnotation(eventId, event, userRequest.getAnnotation(), userRequest.getCategory(), userRequest.getDescription());
         if (userRequest.getEventDate() != null && userRequest.getEventDate().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Дата изменения события не может быть в прошлом");
         }
@@ -241,7 +221,7 @@ public class EventServiceImpl implements EventService {
             throw new BadRequestException("Даты поиска событий не верны");
         }
         List<EventShortDto> events = checkRequestAvailable(onlyAvailable, from, size, sortOption);
-        return new ArrayList<>(events);
+        return events.stream().collect(Collectors.toList());
     }
 
     @Override
@@ -267,7 +247,7 @@ public class EventServiceImpl implements EventService {
         }
         checkRequestText(text, categories, paid, rangeStart, rangeEnd);
         List<EventShortDto> events = checkRequestAvailable(onlyAvailable, from, size, sortOption);
-        return new ArrayList<>(events);
+        return events.stream().collect(Collectors.toList());
     }
 
     @Override
@@ -356,20 +336,20 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-//    private void checkRequestAnnotation(Long eventId, Event event, String annotation,
-//                                        Long category2, String description) {
-//        if (annotation != null) {
-//            event.setAnnotation(annotation);
-//        }
-//        if (category2 != null) {
-//            Category category = categoryRepository.findById(category2)
-//                    .orElseThrow(() -> new ObjectNotFoundException("Не найдена категория с id " + eventId));
-//            event.setCategory(category);
-//        }
-//        if (description != null) {
-//            event.setDescription(description);
-//        }
-//    }
+    private void checkRequestAnnotation(Long eventId, Event event, String annotation,
+                                        Long category2, String description) {
+        if (annotation != null) {
+            event.setAnnotation(annotation);
+        }
+        if (category2 != null) {
+            Category category = categoryRepository.findById(category2)
+                    .orElseThrow(() -> new ObjectNotFoundException("Не найдена категория с id " + eventId));
+            event.setCategory(category);
+        }
+        if (description != null) {
+            event.setDescription(description);
+        }
+    }
 
     private void checkRequestText(String text,
                                   List<Long> categories,
