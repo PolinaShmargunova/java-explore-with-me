@@ -24,6 +24,7 @@ import ru.practicum.explorewithme.repository.EventRepository;
 import ru.practicum.explorewithme.repository.LocationRepository;
 import ru.practicum.explorewithme.repository.RequestRepository;
 import ru.practicum.explorewithme.repository.UserRepository;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,7 +46,7 @@ public class EventServiceImpl implements EventService {
     private final EventMapper mapper;
     private final RequestRepository requestRepository;
 
-   private final BooleanBuilder booleanBuilder = new BooleanBuilder(QEvent.event.state.eq(EventState.PUBLISHED));
+    private final BooleanBuilder booleanBuilder = new BooleanBuilder(QEvent.event.state.eq(EventState.PUBLISHED));
 
     public EventServiceImpl(EventRepository eventRepository, UserRepository userRepository,
                             CategoryRepository categoryRepository, LocationRepository locationRepository,
@@ -254,7 +255,7 @@ public class EventServiceImpl implements EventService {
                                                   Integer from,
                                                   Integer size,
                                                   EventSortOption sortOption) {
-        checkRequestText(text, categories, paid,rangeStart, rangeEnd);
+        checkRequestText(text, categories, paid, rangeStart, rangeEnd);
         if (rangeStart != null && rangeEnd != null && rangeEnd.isBefore(rangeStart)) {
             throw new BadRequestException("Даты поиска событий не верны");
         }
@@ -283,7 +284,7 @@ public class EventServiceImpl implements EventService {
         if (userIds != null && !userIds.isEmpty()) {
             booleanBuilder.and(QEvent.event.initiator.id.in(userIds));
         }
-        checkRequestText(text, categories, paid,rangeStart, rangeEnd);
+        checkRequestText(text, categories, paid, rangeStart, rangeEnd);
         List<EventShortDto> events = checkRequestAvailable(onlyAvailable, from, size, sortOption);
         return events.stream().collect(Collectors.toList());
     }
