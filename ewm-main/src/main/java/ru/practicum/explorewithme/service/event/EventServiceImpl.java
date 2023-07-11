@@ -93,7 +93,8 @@ public class EventServiceImpl implements EventService {
     public EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest adminRequest) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Не найдено событие с id " + eventId));
-        checkRequestAnnotation(eventId, event, adminRequest.getAnnotation(), adminRequest.getCategory(), adminRequest.getDescription());
+        checkRequestAnnotation(eventId, event, adminRequest.getAnnotation(), adminRequest.getCategory(),
+                adminRequest.getDescription());
         if (adminRequest.getEventDate() != null) {
             event.setEventDate(adminRequest.getEventDate());
         }
@@ -183,7 +184,8 @@ public class EventServiceImpl implements EventService {
         if (event.getState() != EventState.CANCELED && event.getState() != EventState.PENDING) {
             throw new UserUpdateStatusException("Изменить статус можно только из статусов PENDING и CANCELED");
         }
-        checkRequestAnnotation(eventId, event, userRequest.getAnnotation(), userRequest.getCategory(), userRequest.getDescription());
+        checkRequestAnnotation(eventId, event, userRequest.getAnnotation(), userRequest.getCategory(),
+                userRequest.getDescription());
         if (userRequest.getEventDate() != null && userRequest.getEventDate().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Дата изменения события не может быть в прошлом");
         }
