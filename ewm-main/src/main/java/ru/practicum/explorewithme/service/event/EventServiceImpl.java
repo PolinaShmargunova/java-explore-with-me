@@ -45,8 +45,7 @@ public class EventServiceImpl implements EventService {
     private final StatClient client;
     private final EventMapper mapper;
     private final RequestRepository requestRepository;
-
-    private final BooleanBuilder booleanBuilder = new BooleanBuilder(QEvent.event.state.eq(EventState.PUBLISHED));
+    private BooleanBuilder booleanBuilder = new BooleanBuilder(QEvent.event.state.eq(EventState.PUBLISHED));
 
     public EventServiceImpl(EventRepository eventRepository, UserRepository userRepository,
                             CategoryRepository categoryRepository, LocationRepository locationRepository,
