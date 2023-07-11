@@ -220,35 +220,8 @@ public class EventServiceImpl implements EventService {
         if (rangeStart != null && rangeEnd != null && rangeEnd.isBefore(rangeStart)) {
             throw new BadRequestException("Даты поиска событий не верны");
         }
-        if (onlyAvailable != null && onlyAvailable) {
-            BooleanExpression withoutLimit = QEvent.event.participantLimit.eq(0);
-            BooleanExpression withLimitAvailable = QEvent.event.participantLimit.gt(
-                    JPAExpressions.select(QRequest.request.count())
-                            .from(QRequest.request)
-                            .where(QRequest.request.event.eq(QEvent.event))
-            );
-            booleanBuilder.and(withoutLimit.or(withLimitAvailable));
-        }
-        List<Event> events = new ArrayList<>();
-        eventRepository.findAll(booleanBuilder).forEach(events::add);
-        events = setConfirmedRequestsAndViews(events);
-        if (sortOption != null) {
-            switch (sortOption) {
-                case EVENT_DATE:
-                    events = events.stream().sorted(Comparator.comparing(Event::getEventDate))
-                            .skip(from).limit(size).collect(Collectors.toList());
-                    break;
-                case VIEWS:
-                    events = events.stream().sorted((e1, e2) -> -Long.compare(e1.getViews(), e2.getViews()))
-                            .skip(from).limit(size).collect(Collectors.toList());
-                    break;
-                default:
-                    events = events.stream().skip(from).limit(size).collect(Collectors.toList());
-            }
-        } else {
-            events = events.stream().skip(from).limit(size).collect(Collectors.toList());
-        }
-        return events.stream().map(mapper::toEventShortDto).collect(Collectors.toList());
+        List<EventShortDto> events = checkRequestAvailable(onlyAvailable, from, size, sortOption);
+        return events.stream().collect(Collectors.toList());
     }
 
     @Override
@@ -273,35 +246,8 @@ public class EventServiceImpl implements EventService {
             booleanBuilder.and(QEvent.event.initiator.id.in(userIds));
         }
         checkRequestText(text, categories, paid, rangeStart, rangeEnd);
-        if (onlyAvailable != null && onlyAvailable) {
-            BooleanExpression withoutLimit = QEvent.event.participantLimit.eq(0);
-            BooleanExpression withLimitAvailable = QEvent.event.participantLimit.gt(
-                    JPAExpressions.select(QRequest.request.count())
-                            .from(QRequest.request)
-                            .where(QRequest.request.event.eq(QEvent.event))
-            );
-            booleanBuilder.and(withoutLimit.or(withLimitAvailable));
-        }
-        List<Event> events = new ArrayList<>();
-        eventRepository.findAll(booleanBuilder).forEach(events::add);
-        events = setConfirmedRequestsAndViews(events);
-        if (sortOption != null) {
-            switch (sortOption) {
-                case EVENT_DATE:
-                    events = events.stream().sorted(Comparator.comparing(Event::getEventDate))
-                            .skip(from).limit(size).collect(Collectors.toList());
-                    break;
-                case VIEWS:
-                    events = events.stream().sorted((e1, e2) -> -Long.compare(e1.getViews(), e2.getViews()))
-                            .skip(from).limit(size).collect(Collectors.toList());
-                    break;
-                default:
-                    events = events.stream().skip(from).limit(size).collect(Collectors.toList());
-            }
-        } else {
-            events = events.stream().skip(from).limit(size).collect(Collectors.toList());
-        }
-        return events.stream().map(mapper::toEventShortDto).collect(Collectors.toList());
+        List<EventShortDto> events = checkRequestAvailable(onlyAvailable, from, size, sortOption);
+        return events.stream().collect(Collectors.toList());
     }
 
     @Override
@@ -429,38 +375,38 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-//    private List<EventShortDto> checkRequestAvailable(Boolean onlyAvailable,
-//                                                      Integer from,
-//                                                      Integer size,
-//                                                      EventSortOption sortOption) {
-//        if (onlyAvailable != null && onlyAvailable) {
-//            BooleanExpression withoutLimit = QEvent.event.participantLimit.eq(0);
-//            BooleanExpression withLimitAvailable = QEvent.event.participantLimit.gt(
-//                    JPAExpressions.select(QRequest.request.count())
-//                            .from(QRequest.request)
-//                            .where(QRequest.request.event.eq(QEvent.event))
-//            );
-//            booleanBuilder.and(withoutLimit.or(withLimitAvailable));
-//        }
-//        List<Event> events = new ArrayList<>();
-//        eventRepository.findAll(booleanBuilder).forEach(events::add);
-//        events = setConfirmedRequestsAndViews(events);
-//        if (sortOption != null) {
-//            switch (sortOption) {
-//                case EVENT_DATE:
-//                    events = events.stream().sorted(Comparator.comparing(Event::getEventDate))
-//                            .skip(from).limit(size).collect(Collectors.toList());
-//                    break;
-//                case VIEWS:
-//                    events = events.stream().sorted((e1, e2) -> -Long.compare(e1.getViews(), e2.getViews()))
-//                            .skip(from).limit(size).collect(Collectors.toList());
-//                    break;
-//                default:
-//                    events = events.stream().skip(from).limit(size).collect(Collectors.toList());
-//            }
-//        } else {
-//            events = events.stream().skip(from).limit(size).collect(Collectors.toList());
-//        }
-//        return events.stream().map(mapper::toEventShortDto).collect(Collectors.toList());
-//    }
+    private List<EventShortDto> checkRequestAvailable(Boolean onlyAvailable,
+                                                      Integer from,
+                                                      Integer size,
+                                                      EventSortOption sortOption) {
+        if (onlyAvailable != null && onlyAvailable) {
+            BooleanExpression withoutLimit = QEvent.event.participantLimit.eq(0);
+            BooleanExpression withLimitAvailable = QEvent.event.participantLimit.gt(
+                    JPAExpressions.select(QRequest.request.count())
+                            .from(QRequest.request)
+                            .where(QRequest.request.event.eq(QEvent.event))
+            );
+            booleanBuilder.and(withoutLimit.or(withLimitAvailable));
+        }
+        List<Event> events = new ArrayList<>();
+        eventRepository.findAll(booleanBuilder).forEach(events::add);
+        events = setConfirmedRequestsAndViews(events);
+        if (sortOption != null) {
+            switch (sortOption) {
+                case EVENT_DATE:
+                    events = events.stream().sorted(Comparator.comparing(Event::getEventDate))
+                            .skip(from).limit(size).collect(Collectors.toList());
+                    break;
+                case VIEWS:
+                    events = events.stream().sorted((e1, e2) -> -Long.compare(e1.getViews(), e2.getViews()))
+                            .skip(from).limit(size).collect(Collectors.toList());
+                    break;
+                default:
+                    events = events.stream().skip(from).limit(size).collect(Collectors.toList());
+            }
+        } else {
+            events = events.stream().skip(from).limit(size).collect(Collectors.toList());
+        }
+        return events.stream().map(mapper::toEventShortDto).collect(Collectors.toList());
+    }
 }
