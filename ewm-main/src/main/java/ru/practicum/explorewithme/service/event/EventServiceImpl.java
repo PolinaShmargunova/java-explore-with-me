@@ -101,8 +101,25 @@ public class EventServiceImpl implements EventService {
         if (adminRequest.getEventDate() != null && adminRequest.getEventDate().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Изменение даты события на уже наступившую невозможно");
         }
-        checkRequestLocation(event, adminRequest.getLocation(), adminRequest.getPaid(),
-                adminRequest.getParticipantLimit(), adminRequest.getRequestModeration(), adminRequest.getTitle());
+        if (adminRequest.getLocation() != null) {
+            LocationDto locationDto = adminRequest.getLocation();
+            Location location = locationRepository.findByLatAndLon(locationDto.getLat(), locationDto.getLon()).orElse(
+                    locationRepository.save(new Location(locationDto.getLat(), locationDto.getLon()))
+            );
+            event.setLocation(location);
+        }
+        if (adminRequest.getPaid() != null) {
+            event.setPaid(adminRequest.getPaid());
+        }
+        if (adminRequest.getParticipantLimit() != null) {
+            event.setParticipantLimit(adminRequest.getParticipantLimit());
+        }
+        if (adminRequest.getRequestModeration() != null) {
+            event.setRequestModeration(adminRequest.getRequestModeration());
+        }
+        if (adminRequest.getTitle() != null) {
+            event.setTitle(adminRequest.getTitle());
+        }
         if (adminRequest.getStateAction() != null) {
             switch (adminRequest.getStateAction()) {
                 case REJECT_EVENT:
@@ -184,17 +201,42 @@ public class EventServiceImpl implements EventService {
         if (event.getState() != EventState.CANCELED && event.getState() != EventState.PENDING) {
             throw new UserUpdateStatusException("Изменить статус можно только из статусов PENDING и CANCELED");
         }
-        checkRequestAnnotation(eventId, event, userRequest.getAnnotation(), userRequest.getCategory(),
-                userRequest.getDescription());
+        if (userRequest.getAnnotation() != null) {
+            event.setAnnotation(userRequest.getAnnotation());
+        }
+        if (userRequest.getCategory() != null) {
+            Category category = categoryRepository.findById(userRequest.getCategory())
+                    .orElseThrow(() -> new ObjectNotFoundException("Не найдена категория с id " + eventId));
+            event.setCategory(category);
+        }
+        if (userRequest.getDescription() != null) {
+            event.setDescription(userRequest.getDescription());
+        }
         if (userRequest.getEventDate() != null && userRequest.getEventDate().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Дата изменения события не может быть в прошлом");
         }
         if (userRequest.getEventDate() != null) {
             event.setEventDate(userRequest.getEventDate());
         }
-        checkRequestLocation(event, userRequest.getLocation(), userRequest.getPaid(),
-                userRequest.getParticipantLimit(), userRequest.getRequestModeration(),
-                userRequest.getTitle());
+        if (userRequest.getLocation() != null) {
+            LocationDto locationDto = userRequest.getLocation();
+            Location location = locationRepository.findByLatAndLon(locationDto.getLat(), locationDto.getLon()).orElse(
+                    locationRepository.save(new Location(locationDto.getLat(), locationDto.getLon()))
+            );
+            event.setLocation(location);
+        }
+        if (userRequest.getPaid() != null) {
+            event.setPaid(userRequest.getPaid());
+        }
+        if (userRequest.getParticipantLimit() != null) {
+            event.setParticipantLimit(userRequest.getParticipantLimit());
+        }
+        if (userRequest.getRequestModeration() != null) {
+            event.setRequestModeration(userRequest.getRequestModeration());
+        }
+        if (userRequest.getTitle() != null) {
+            event.setTitle(userRequest.getTitle());
+        }
 
         if (userRequest.getStateAction() != null) {
             switch (userRequest.getStateAction()) {
@@ -315,28 +357,28 @@ public class EventServiceImpl implements EventService {
         ));
     }
 
-    private void checkRequestLocation(Event event, LocationDto location2, Boolean paid, Integer participantLimit,
-                                      Boolean requestModeration, String title) {
-        if (location2 != null) {
-            LocationDto locationDto = location2;
-            Location location = locationRepository.findByLatAndLon(locationDto.getLat(), locationDto.getLon()).orElse(
-                    locationRepository.save(new Location(locationDto.getLat(), locationDto.getLon()))
-            );
-            event.setLocation(location);
-        }
-        if (paid != null) {
-            event.setPaid(paid);
-        }
-        if (participantLimit != null) {
-            event.setParticipantLimit(participantLimit);
-        }
-        if (requestModeration != null) {
-            event.setRequestModeration(requestModeration);
-        }
-        if (title != null) {
-            event.setTitle(title);
-        }
-    }
+//    private void checkRequestLocation(Event event, LocationDto location2, Boolean paid, Integer participantLimit,
+//                                      Boolean requestModeration, String title) {
+//        if (location2 != null) {
+//            LocationDto locationDto = location2;
+//            Location location = locationRepository.findByLatAndLon(locationDto.getLat(), locationDto.getLon()).orElse(
+//                    locationRepository.save(new Location(locationDto.getLat(), locationDto.getLon()))
+//            );
+//            event.setLocation(location);
+//        }
+//        if (paid != null) {
+//            event.setPaid(paid);
+//        }
+//        if (participantLimit != null) {
+//            event.setParticipantLimit(participantLimit);
+//        }
+//        if (requestModeration != null) {
+//            event.setRequestModeration(requestModeration);
+//        }
+//        if (title != null) {
+//            event.setTitle(title);
+//        }
+//    }
 
     private void checkRequestAnnotation(Long eventId, Event event, String annotation,
                                         Long category2, String description) {
