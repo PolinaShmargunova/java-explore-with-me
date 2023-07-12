@@ -11,7 +11,17 @@ import ru.practicum.StatClient;
 import ru.practicum.ViewStats;
 import ru.practicum.explorewithme.model.EventSortOption;
 import ru.practicum.explorewithme.model.category.Category;
-import ru.practicum.explorewithme.model.event.*;
+import ru.practicum.explorewithme.model.event.Event;
+import ru.practicum.explorewithme.model.event.EventFullDto;
+import ru.practicum.explorewithme.model.event.EventMapper;
+import ru.practicum.explorewithme.model.event.EventShortDto;
+import ru.practicum.explorewithme.model.event.EventState;
+import ru.practicum.explorewithme.model.event.Location;
+import ru.practicum.explorewithme.model.event.LocationDto;
+import ru.practicum.explorewithme.model.event.NewEventDto;
+import ru.practicum.explorewithme.model.event.QEvent;
+import ru.practicum.explorewithme.model.event.UpdateEventAdminRequest;
+import ru.practicum.explorewithme.model.event.UpdateEventUserRequest;
 import ru.practicum.explorewithme.model.exception.AdminUpdateStatusException;
 import ru.practicum.explorewithme.model.exception.BadRequestException;
 import ru.practicum.explorewithme.model.exception.ObjectNotFoundException;
@@ -45,7 +55,7 @@ public class EventServiceImpl implements EventService {
     private final StatClient client;
     private final EventMapper mapper;
     private final RequestRepository requestRepository;
-    private BooleanBuilder booleanBuilder = new BooleanBuilder(QEvent.event.state.eq(EventState.PUBLISHED));
+    private final BooleanBuilder booleanBuilder = new BooleanBuilder(QEvent.event.state.eq(EventState.PUBLISHED));
 
     public EventServiceImpl(EventRepository eventRepository, UserRepository userRepository,
                             CategoryRepository categoryRepository, LocationRepository locationRepository,
@@ -67,6 +77,7 @@ public class EventServiceImpl implements EventService {
                                         LocalDateTime rangeStart,
                                         LocalDateTime rangeEnd,
                                         Pageable pageable) {
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
         if (users != null && !users.isEmpty()) {
             booleanBuilder.and(QEvent.event.initiator.id.in(users));
         }
