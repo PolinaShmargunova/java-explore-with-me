@@ -67,7 +67,6 @@ public class EventServiceImpl implements EventService {
                                         LocalDateTime rangeStart,
                                         LocalDateTime rangeEnd,
                                         Pageable pageable) {
-        BooleanBuilder booleanBuilder = new BooleanBuilder();
         if (users != null && !users.isEmpty()) {
             booleanBuilder.and(QEvent.event.initiator.id.in(users));
         }
