@@ -11,7 +11,17 @@ import ru.practicum.StatClient;
 import ru.practicum.ViewStats;
 import ru.practicum.explorewithme.model.EventSortOption;
 import ru.practicum.explorewithme.model.category.Category;
-import ru.practicum.explorewithme.model.event.*;
+import ru.practicum.explorewithme.model.event.Event;
+import ru.practicum.explorewithme.model.event.EventFullDto;
+import ru.practicum.explorewithme.model.event.EventMapper;
+import ru.practicum.explorewithme.model.event.EventShortDto;
+import ru.practicum.explorewithme.model.event.EventState;
+import ru.practicum.explorewithme.model.event.Location;
+import ru.practicum.explorewithme.model.event.LocationDto;
+import ru.practicum.explorewithme.model.event.NewEventDto;
+import ru.practicum.explorewithme.model.event.QEvent;
+import ru.practicum.explorewithme.model.event.UpdateEventAdminRequest;
+import ru.practicum.explorewithme.model.event.UpdateEventUserRequest;
 import ru.practicum.explorewithme.model.exception.AdminUpdateStatusException;
 import ru.practicum.explorewithme.model.exception.BadRequestException;
 import ru.practicum.explorewithme.model.exception.ObjectNotFoundException;
@@ -19,7 +29,11 @@ import ru.practicum.explorewithme.model.exception.UserUpdateStatusException;
 import ru.practicum.explorewithme.model.request.QRequest;
 import ru.practicum.explorewithme.model.request.Request;
 import ru.practicum.explorewithme.model.user.User;
-import ru.practicum.explorewithme.repository.*;
+import ru.practicum.explorewithme.repository.CategoryRepository;
+import ru.practicum.explorewithme.repository.EventRepository;
+import ru.practicum.explorewithme.repository.LocationRepository;
+import ru.practicum.explorewithme.repository.RequestRepository;
+import ru.practicum.explorewithme.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -36,8 +50,9 @@ public class EventServiceImpl implements EventService {
     private final EventMapper mapper;
     private final RequestRepository requestRepository;
 
-    public EventServiceImpl(EventRepository eventRepository, UserRepository userRepository, CategoryRepository categoryRepository,
-                            LocationRepository locationRepository, EventMapper mapper, RequestRepository requestRepository,
+    public EventServiceImpl(EventRepository eventRepository, UserRepository userRepository,
+                            CategoryRepository categoryRepository, LocationRepository locationRepository,
+                            EventMapper mapper, RequestRepository requestRepository,
                             @Value("${STATS_SERVER_URL:http://localhost:9090}") String serverUrl) {
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
@@ -258,22 +273,7 @@ public class EventServiceImpl implements EventService {
                                                   Integer size,
                                                   EventSortOption sortOption) {
         BooleanBuilder booleanBuilder = new BooleanBuilder(QEvent.event.state.eq(EventState.PUBLISHED));
-        if (text != null && !text.isBlank()) {
-            BooleanExpression byTextInAnnotation = QEvent.event.annotation.likeIgnoreCase("%" + text + "%");
-            BooleanExpression byTextInDescription = QEvent.event.description.likeIgnoreCase("%" + text + "%");
-            booleanBuilder.and(byTextInAnnotation.or(byTextInDescription));
-        }
-        if (categories != null && categories.size() != 0) {
-            booleanBuilder.and(QEvent.event.category.id.in(categories));
-        }
-        if (paid != null) {
-            booleanBuilder.and(QEvent.event.paid.eq(paid));
-        }
-        if (rangeStart != null && rangeEnd != null) {
-            booleanBuilder.and(QEvent.event.eventDate.between(rangeStart, rangeEnd));
-        } else {
-            booleanBuilder.and(QEvent.event.eventDate.after(LocalDateTime.now()));
-        }
+        checkEventText(text, categories, paid, rangeStart, rangeEnd, booleanBuilder);
         if (rangeStart != null && rangeEnd != null && rangeEnd.isBefore(rangeStart)) {
             throw new BadRequestException("Даты поиска событий не верны");
         }
@@ -308,6 +308,25 @@ public class EventServiceImpl implements EventService {
         return events.stream().map(mapper::toEventShortDto).collect(Collectors.toList());
     }
 
+    private void checkEventText(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart, LocalDateTime rangeEnd, BooleanBuilder booleanBuilder) {
+        if (text != null && !text.isBlank()) {
+            BooleanExpression byTextInAnnotation = QEvent.event.annotation.likeIgnoreCase("%" + text + "%");
+            BooleanExpression byTextInDescription = QEvent.event.description.likeIgnoreCase("%" + text + "%");
+            booleanBuilder.and(byTextInAnnotation.or(byTextInDescription));
+        }
+        if (categories != null && categories.size() != 0) {
+            booleanBuilder.and(QEvent.event.category.id.in(categories));
+        }
+        if (paid != null) {
+            booleanBuilder.and(QEvent.event.paid.eq(paid));
+        }
+        if (rangeStart != null && rangeEnd != null) {
+            booleanBuilder.and(QEvent.event.eventDate.between(rangeStart, rangeEnd));
+        } else {
+            booleanBuilder.and(QEvent.event.eventDate.after(LocalDateTime.now()));
+        }
+    }
+
     @Override
     public EventFullDto getPublishedEventById(Long id) {
         Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
@@ -330,22 +349,7 @@ public class EventServiceImpl implements EventService {
         if (userIds != null && !userIds.isEmpty()) {
             booleanBuilder.and(QEvent.event.initiator.id.in(userIds));
         }
-        if (text != null && !text.isBlank()) {
-            BooleanExpression byTextInAnnotation = QEvent.event.annotation.likeIgnoreCase("%" + text + "%");
-            BooleanExpression byTextInDescription = QEvent.event.description.likeIgnoreCase("%" + text + "%");
-            booleanBuilder.and(byTextInAnnotation.or(byTextInDescription));
-        }
-        if (categories != null && categories.size() != 0) {
-            booleanBuilder.and(QEvent.event.category.id.in(categories));
-        }
-        if (paid != null) {
-            booleanBuilder.and(QEvent.event.paid.eq(paid));
-        }
-        if (rangeStart != null && rangeEnd != null) {
-            booleanBuilder.and(QEvent.event.eventDate.between(rangeStart, rangeEnd));
-        } else {
-            booleanBuilder.and(QEvent.event.eventDate.after(LocalDateTime.now()));
-        }
+        checkEventText(text, categories, paid, rangeStart, rangeEnd, booleanBuilder);
         if (onlyAvailable != null && onlyAvailable) {
             BooleanExpression withoutLimit = QEvent.event.participantLimit.eq(0);
             BooleanExpression withLimitAvailable = QEvent.event.participantLimit.gt(
