@@ -104,9 +104,25 @@ public class EventServiceImpl implements EventService {
         if (adminRequest.getEventDate() != null && adminRequest.getEventDate().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Изменение даты события на уже наступившую невозможно");
         }
-        checkEventLocation(event, adminRequest.getLocation(), adminRequest.getPaid(),
-                adminRequest.getParticipantLimit(), adminRequest.getRequestModeration(),
-                adminRequest.getTitle(), adminRequest);
+        if (adminRequest.getLocation() != null) {
+            LocationDto locationDto = adminRequest.getLocation();
+            Location location = locationRepository.findByLatAndLon(locationDto.getLat(), locationDto.getLon()).orElse(
+                    locationRepository.save(new Location(locationDto.getLat(), locationDto.getLon()))
+            );
+            event.setLocation(location);
+        }
+        if (adminRequest.getPaid() != null) {
+            event.setPaid(adminRequest.getPaid());
+        }
+        if (adminRequest.getParticipantLimit() != null) {
+            event.setParticipantLimit(adminRequest.getParticipantLimit());
+        }
+        if (adminRequest.getRequestModeration() != null) {
+            event.setRequestModeration(adminRequest.getRequestModeration());
+        }
+        if (adminRequest.getTitle() != null) {
+            event.setTitle(adminRequest.getTitle());
+        }
         if (adminRequest.getStateAction() != null) {
             switch (adminRequest.getStateAction()) {
                 case REJECT_EVENT:
@@ -124,29 +140,6 @@ public class EventServiceImpl implements EventService {
         }
         eventRepository.save(event);
         return mapper.toEventFullDto(setConfirmedRequestAndViews(event));
-    }
-
-    private void checkEventLocation(Event event, LocationDto location2, Boolean paid,
-                                    Integer participantLimit, Boolean requestModeration,
-                                    String title, Object adminRequest) {
-        if (location2 != null) {
-            Location location = locationRepository.findByLatAndLon(location2.getLat(), location2.getLon()).orElse(
-                    locationRepository.save(new Location(location2.getLat(), location2.getLon()))
-            );
-            event.setLocation(location);
-        }
-        if (paid != null) {
-            event.setPaid(paid);
-        }
-        if (participantLimit != null) {
-            event.setParticipantLimit(participantLimit);
-        }
-        if (requestModeration != null) {
-            event.setRequestModeration(requestModeration);
-        }
-        if (title != null) {
-            event.setTitle(title);
-        }
     }
 
     private void checkEventAnnotation(Long eventId, Event event, String annotation,
@@ -234,9 +227,25 @@ public class EventServiceImpl implements EventService {
         if (userRequest.getEventDate() != null) {
             event.setEventDate(userRequest.getEventDate());
         }
-        checkEventLocation(event, userRequest.getLocation(), userRequest.getPaid(),
-                userRequest.getParticipantLimit(), userRequest.getRequestModeration(),
-                userRequest.getTitle(), userRequest);
+        if (userRequest.getLocation() != null) {
+            LocationDto locationDto = userRequest.getLocation();
+            Location location = locationRepository.findByLatAndLon(locationDto.getLat(), locationDto.getLon()).orElse(
+                    locationRepository.save(new Location(locationDto.getLat(), locationDto.getLon()))
+            );
+            event.setLocation(location);
+        }
+        if (userRequest.getPaid() != null) {
+            event.setPaid(userRequest.getPaid());
+        }
+        if (userRequest.getParticipantLimit() != null) {
+            event.setParticipantLimit(userRequest.getParticipantLimit());
+        }
+        if (userRequest.getRequestModeration() != null) {
+            event.setRequestModeration(userRequest.getRequestModeration());
+        }
+        if (userRequest.getTitle() != null) {
+            event.setTitle(userRequest.getTitle());
+        }
 
         if (userRequest.getStateAction() != null) {
             switch (userRequest.getStateAction()) {
