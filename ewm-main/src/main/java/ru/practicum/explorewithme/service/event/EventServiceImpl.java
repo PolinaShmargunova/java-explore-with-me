@@ -96,17 +96,8 @@ public class EventServiceImpl implements EventService {
     public EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest adminRequest) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Не найдено событие с id " + eventId));
-        if (adminRequest.getAnnotation() != null) {
-            event.setAnnotation(adminRequest.getAnnotation());
-        }
-        if (adminRequest.getCategory() != null) {
-            Category category = categoryRepository.findById(adminRequest.getCategory())
-                    .orElseThrow(() -> new ObjectNotFoundException("Не найдена категория с id " + eventId));
-            event.setCategory(category);
-        }
-        if (adminRequest.getDescription() != null) {
-            event.setDescription(adminRequest.getDescription());
-        }
+        checkEventAnnotation(eventId, event, adminRequest.getAnnotation(), adminRequest.getCategory(),
+                adminRequest.getDescription(), adminRequest);
         if (adminRequest.getEventDate() != null) {
             event.setEventDate(adminRequest.getEventDate());
         }
@@ -149,6 +140,21 @@ public class EventServiceImpl implements EventService {
         }
         eventRepository.save(event);
         return mapper.toEventFullDto(setConfirmedRequestAndViews(event));
+    }
+
+    private void checkEventAnnotation(Long eventId, Event event, String annotation,
+                                      Long category2, String description, Object adminRequest) {
+        if (annotation != null) {
+            event.setAnnotation(annotation);
+        }
+        if (category2 != null) {
+            Category category = categoryRepository.findById(category2)
+                    .orElseThrow(() -> new ObjectNotFoundException("Не найдена категория с id " + eventId));
+            event.setCategory(category);
+        }
+        if (description != null) {
+            event.setDescription(description);
+        }
     }
 
     @Override
@@ -213,17 +219,8 @@ public class EventServiceImpl implements EventService {
         if (event.getState() != EventState.CANCELED && event.getState() != EventState.PENDING) {
             throw new UserUpdateStatusException("Изменить статус можно только из статусов PENDING и CANCELED");
         }
-        if (userRequest.getAnnotation() != null) {
-            event.setAnnotation(userRequest.getAnnotation());
-        }
-        if (userRequest.getCategory() != null) {
-            Category category = categoryRepository.findById(userRequest.getCategory())
-                    .orElseThrow(() -> new ObjectNotFoundException("Не найдена категория с id " + eventId));
-            event.setCategory(category);
-        }
-        if (userRequest.getDescription() != null) {
-            event.setDescription(userRequest.getDescription());
-        }
+        checkEventAnnotation(eventId, event, userRequest.getAnnotation(), userRequest.getCategory(),
+                userRequest.getDescription(), userRequest);
         if (userRequest.getEventDate() != null && userRequest.getEventDate().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Дата изменения события не может быть в прошлом");
         }
