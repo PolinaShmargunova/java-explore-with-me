@@ -51,7 +51,7 @@ public class PrivateSubscriptionController {
     @DeleteMapping("/{subscribeTarget}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeSubscription(@PathVariable Long userId, @PathVariable Long subscribeTarget) {
-        log.trace("Пользователь {} подписывается на {}", userId, subscribeTarget);
+        log.trace("Пользователь {} отписывается от {}", userId, subscribeTarget);
         subscriptionService.removeSubscription(subscribeTarget, userId);
     }
 
@@ -67,11 +67,9 @@ public class PrivateSubscriptionController {
                                                          @RequestParam(required = false) List<Long> categories,
                                                          @RequestParam(required = false) Boolean paid,
                                                          @RequestParam(required = false)
-                                                         @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-                                                         LocalDateTime rangeStart,
+                                                         @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
                                                          @RequestParam(required = false)
-                                                         @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-                                                         LocalDateTime rangeEnd,
+                                                         @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
                                                          @RequestParam(required = false) Boolean onlyAvailable,
                                                          @RequestParam(required = false) String sort,
                                                          @RequestParam(defaultValue = CommonUtils.PAGINATION_DEFAULT_FROM) @PositiveOrZero Integer from,

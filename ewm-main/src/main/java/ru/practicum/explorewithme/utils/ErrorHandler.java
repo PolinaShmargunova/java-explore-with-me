@@ -63,9 +63,9 @@ public class ErrorHandler {
             RequestStatusException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleDataIntegrityViolationException(final Exception e) {
-        log.error("Нарушение правил цолостности БД {}", e.getMessage(), e);
+        log.error("Нарушение правил целостности БД {}", e.getMessage(), e);
         return new ApiError(e.getMessage(),
-                "Нарушение правил цолостности БД",
+                "Нарушение правил целостности БД",
                 HttpStatus.CONFLICT.name(),
                 LocalDateTime.now().format(CommonUtils.DATE_TIME_FORMATTER),
                 getErrors(e));

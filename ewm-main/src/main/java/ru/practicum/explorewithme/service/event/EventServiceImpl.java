@@ -11,7 +11,17 @@ import ru.practicum.StatClient;
 import ru.practicum.ViewStats;
 import ru.practicum.explorewithme.model.EventSortOption;
 import ru.practicum.explorewithme.model.category.Category;
-import ru.practicum.explorewithme.model.event.*;
+import ru.practicum.explorewithme.model.event.Event;
+import ru.practicum.explorewithme.model.event.EventFullDto;
+import ru.practicum.explorewithme.model.event.EventMapper;
+import ru.practicum.explorewithme.model.event.EventShortDto;
+import ru.practicum.explorewithme.model.event.EventState;
+import ru.practicum.explorewithme.model.event.Location;
+import ru.practicum.explorewithme.model.event.LocationDto;
+import ru.practicum.explorewithme.model.event.NewEventDto;
+import ru.practicum.explorewithme.model.event.QEvent;
+import ru.practicum.explorewithme.model.event.UpdateEventAdminRequest;
+import ru.practicum.explorewithme.model.event.UpdateEventUserRequest;
 import ru.practicum.explorewithme.model.exception.AdminUpdateStatusException;
 import ru.practicum.explorewithme.model.exception.BadRequestException;
 import ru.practicum.explorewithme.model.exception.ObjectNotFoundException;
@@ -26,13 +36,7 @@ import ru.practicum.explorewithme.repository.RequestRepository;
 import ru.practicum.explorewithme.repository.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -92,17 +96,8 @@ public class EventServiceImpl implements EventService {
     public EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest adminRequest) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Не найдено событие с id " + eventId));
-        if (adminRequest.getAnnotation() != null) {
-            event.setAnnotation(adminRequest.getAnnotation());
-        }
-        if (adminRequest.getCategory() != null) {
-            Category category = categoryRepository.findById(adminRequest.getCategory())
-                    .orElseThrow(() -> new ObjectNotFoundException("Не найдена категория с id " + eventId));
-            event.setCategory(category);
-        }
-        if (adminRequest.getDescription() != null) {
-            event.setDescription(adminRequest.getDescription());
-        }
+        checkEventAnnotation(eventId, event, adminRequest.getAnnotation(), adminRequest.getCategory(),
+                adminRequest.getDescription(), adminRequest);
         if (adminRequest.getEventDate() != null) {
             event.setEventDate(adminRequest.getEventDate());
         }
@@ -145,6 +140,21 @@ public class EventServiceImpl implements EventService {
         }
         eventRepository.save(event);
         return mapper.toEventFullDto(setConfirmedRequestAndViews(event));
+    }
+
+    private void checkEventAnnotation(Long eventId, Event event, String annotation,
+                                      Long category2, String description, Object adminRequest) {
+        if (annotation != null) {
+            event.setAnnotation(annotation);
+        }
+        if (category2 != null) {
+            Category category = categoryRepository.findById(category2)
+                    .orElseThrow(() -> new ObjectNotFoundException("Не найдена категория с id " + eventId));
+            event.setCategory(category);
+        }
+        if (description != null) {
+            event.setDescription(description);
+        }
     }
 
     @Override
@@ -209,17 +219,8 @@ public class EventServiceImpl implements EventService {
         if (event.getState() != EventState.CANCELED && event.getState() != EventState.PENDING) {
             throw new UserUpdateStatusException("Изменить статус можно только из статусов PENDING и CANCELED");
         }
-        if (userRequest.getAnnotation() != null) {
-            event.setAnnotation(userRequest.getAnnotation());
-        }
-        if (userRequest.getCategory() != null) {
-            Category category = categoryRepository.findById(userRequest.getCategory())
-                    .orElseThrow(() -> new ObjectNotFoundException("Не найдена категория с id " + eventId));
-            event.setCategory(category);
-        }
-        if (userRequest.getDescription() != null) {
-            event.setDescription(userRequest.getDescription());
-        }
+        checkEventAnnotation(eventId, event, userRequest.getAnnotation(), userRequest.getCategory(),
+                userRequest.getDescription(), userRequest);
         if (userRequest.getEventDate() != null && userRequest.getEventDate().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Дата изменения события не может быть в прошлом");
         }
@@ -269,22 +270,7 @@ public class EventServiceImpl implements EventService {
                                                   Integer size,
                                                   EventSortOption sortOption) {
         BooleanBuilder booleanBuilder = new BooleanBuilder(QEvent.event.state.eq(EventState.PUBLISHED));
-        if (text != null && !text.isBlank()) {
-            BooleanExpression byTextInAnnotation = QEvent.event.annotation.likeIgnoreCase("%" + text + "%");
-            BooleanExpression byTextInDescription = QEvent.event.description.likeIgnoreCase("%" + text + "%");
-            booleanBuilder.and(byTextInAnnotation.or(byTextInDescription));
-        }
-        if (categories != null && categories.size() != 0) {
-            booleanBuilder.and(QEvent.event.category.id.in(categories));
-        }
-        if (paid != null) {
-            booleanBuilder.and(QEvent.event.paid.eq(paid));
-        }
-        if (rangeStart != null && rangeEnd != null) {
-            booleanBuilder.and(QEvent.event.eventDate.between(rangeStart, rangeEnd));
-        } else {
-            booleanBuilder.and(QEvent.event.eventDate.after(LocalDateTime.now()));
-        }
+        checkEventText(text, categories, paid, rangeStart, rangeEnd, booleanBuilder);
         if (rangeStart != null && rangeEnd != null && rangeEnd.isBefore(rangeStart)) {
             throw new BadRequestException("Даты поиска событий не верны");
         }
@@ -319,6 +305,25 @@ public class EventServiceImpl implements EventService {
         return events.stream().map(mapper::toEventShortDto).collect(Collectors.toList());
     }
 
+    private void checkEventText(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart, LocalDateTime rangeEnd, BooleanBuilder booleanBuilder) {
+        if (text != null && !text.isBlank()) {
+            BooleanExpression byTextInAnnotation = QEvent.event.annotation.likeIgnoreCase("%" + text + "%");
+            BooleanExpression byTextInDescription = QEvent.event.description.likeIgnoreCase("%" + text + "%");
+            booleanBuilder.and(byTextInAnnotation.or(byTextInDescription));
+        }
+        if (categories != null && categories.size() != 0) {
+            booleanBuilder.and(QEvent.event.category.id.in(categories));
+        }
+        if (paid != null) {
+            booleanBuilder.and(QEvent.event.paid.eq(paid));
+        }
+        if (rangeStart != null && rangeEnd != null) {
+            booleanBuilder.and(QEvent.event.eventDate.between(rangeStart, rangeEnd));
+        } else {
+            booleanBuilder.and(QEvent.event.eventDate.after(LocalDateTime.now()));
+        }
+    }
+
     @Override
     public EventFullDto getPublishedEventById(Long id) {
         Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
@@ -341,22 +346,7 @@ public class EventServiceImpl implements EventService {
         if (userIds != null && !userIds.isEmpty()) {
             booleanBuilder.and(QEvent.event.initiator.id.in(userIds));
         }
-        if (text != null && !text.isBlank()) {
-            BooleanExpression byTextInAnnotation = QEvent.event.annotation.likeIgnoreCase("%" + text + "%");
-            BooleanExpression byTextInDescription = QEvent.event.description.likeIgnoreCase("%" + text + "%");
-            booleanBuilder.and(byTextInAnnotation.or(byTextInDescription));
-        }
-        if (categories != null && categories.size() != 0) {
-            booleanBuilder.and(QEvent.event.category.id.in(categories));
-        }
-        if (paid != null) {
-            booleanBuilder.and(QEvent.event.paid.eq(paid));
-        }
-        if (rangeStart != null && rangeEnd != null) {
-            booleanBuilder.and(QEvent.event.eventDate.between(rangeStart, rangeEnd));
-        } else {
-            booleanBuilder.and(QEvent.event.eventDate.after(LocalDateTime.now()));
-        }
+        checkEventText(text, categories, paid, rangeStart, rangeEnd, booleanBuilder);
         if (onlyAvailable != null && onlyAvailable) {
             BooleanExpression withoutLimit = QEvent.event.participantLimit.eq(0);
             BooleanExpression withLimitAvailable = QEvent.event.participantLimit.gt(
